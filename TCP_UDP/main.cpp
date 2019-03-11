@@ -15,8 +15,6 @@
 #include <stdio.h>
 #include <conio.h>
 
-void startTCP();
-
 void initializeSocket();
 
 DWORD WINAPI userLoop(LPVOID lpParam) {
@@ -41,7 +39,7 @@ void processArguments(char *argv[], int argc) {
     myData.listeningPort = atoi(argv[2]);
     myData.targetPort = atoi(argv[3]);
     myData.targetIP = argv[4];
-    myData.ifTCP = argv[5] == "TCP";
+    myData.ifTCP = strcmp(argv[5], "TCP\0")==0;
     myData.ifHaveToken = 0 == strcmp(argv[6], "HAVE_TOKEN\0");
     myData.ifAdmin = 0 == strcmp(argv[6], "HAVE_TOKEN\0");
     myData.tokenAutorizationKey = -1;
@@ -59,8 +57,6 @@ void processArguments(char *argv[], int argc) {
 
     myData.ifTCP ? startTCP() : startUDP();
 }
-
-
 
 void initializeSocket() {
     WSADATA wsaData;
