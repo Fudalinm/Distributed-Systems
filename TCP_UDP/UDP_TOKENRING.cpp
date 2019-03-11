@@ -22,29 +22,27 @@ void serviceUDPSending();
 void registerUDPClient();
 void serviceUDPReceiving();
 
-
 Connector myData;
 bool ifNewMessageToSend = false;
 char userName[USER_NAME_SIZE];
 char message[MSG_SIZE];
 
-
-
 void serviceUDPSending(){
-    sleep(2);
+    //patrzymy czy zmienic klucz autoryzacji pakietu
     myData.ifAdmin ? myData.tokenAutorizationKey = rand()% 65536: myData.tokenAutorizationKey = myData.lastToken.tokenAutorizationKey;
     Token tokenToSend;
     tokenToSend.tokenAutorizationKey = myData.tokenAutorizationKey;
     if(ifNewMessageToSend){
         tokenToSend.msgType = STRING_MESSAGE;
+        memcpy(tokenToSend.message.from,myData.userName,USER_NAME_SIZE);
+        memcpy(tokenToSend.message.to,userName,USER_NAME_SIZE);
+        memcpy(tokenToSend.message.content,message,MSG_SIZE);
         ifNewMessageToSend = false;
     }else{
         tokenToSend.msgType = EMPTY_TOKEN;
     }
-    memcpy(tokenToSend.message.from,myData.userName,USER_NAME_SIZE);
-    memcpy(tokenToSend.message.to,userName,USER_NAME_SIZE);
-    memcpy(tokenToSend.message.content,message,MSG_SIZE);
-
+    tokenToSend.msgID = myData.lastToken.msgID + 1;
+    myData.lastToken = tokenToSend;
     int a = sendto(myData.nextHopSocket,(char *) (&tokenToSend), sizeof(tokenToSend), 0 ,(sockaddr *) &myData.nextHopAddress, sizeof(myData.nextHopAddress) );
     a == -1 ? printf("%s: Couldn't send\n",myData.userName) : printf("%s: Could send\n",myData.userName);
     myData.ifHaveToken = false;
@@ -52,10 +50,8 @@ void serviceUDPSending(){
 
 void startUDP(){
     createUDPSockets();
-    //printf("Dupa 2\n");
     while(true) {
         sleep(1);
-        //printf("Dupa 1\n");
         myData.ifHaveToken == 1 ? serviceUDPSending() : serviceUDPReceiving();
     }
 }
@@ -94,57 +90,50 @@ void createUDPSockets() {
 
 //we are not incrementing msgID
 void serviceUDPResending(){
-    sleep(1);
     myData.ifAdmin ? myData.tokenAutorizationKey = rand()% 65536: myData.tokenAutorizationKey = myData.lastToken.tokenAutorizationKey;
-
     myData.lastToken.tokenAutorizationKey = myData.tokenAutorizationKey;
-    0 == sendto(myData.nextHopSocket,(char *) (&myData.lastToken), sizeof(myData.lastToken), 0 ,(sockaddr *) &myData.nextHopAddress, sizeof(myData.nextHopAddress) ) ?
-    printf("Przekazanie udało się %s\n",myData.userName): printf("Przekazanie NIE udało się %s\n",myData.userName);
+
+    -1 == sendto(myData.nextHopSocket,(char *) (&myData.lastToken), sizeof(myData.lastToken), 0 ,(sockaddr *) &myData.nextHopAddress, sizeof(myData.nextHopAddress) ) ?
+    printf("%s:Couldn't pass the message\n",myData.userName): printf("%s:Could pass the message\n",myData.userName);
+    myData.ifHaveToken = false;
+    myData.lastMessageId = myData.lastToken.msgID;
 
 }
 
 void registerUDPClient(){
 }
 
-//TODO: Implement user sending interface in new thread
-//TODO: WHEN DO I NEED TO DELETE PACKET FORM LOOP???
-//TODO: Something logically wrong with this funcion it need to be checke
+//last messageID is changed in sending and resending methods
 void serviceUDPReceiving(){
-    // TODO: Refactor nextHop socket name
+    sleep(1.5);
     Token recvToken;
     recv(myData.listeningSocket,(char*) &recvToken, sizeof(recvToken),0);
     if(recvToken.msgType == REGISTER_MESSAGE){
         registerUDPClient();
-    }else if(recvToken.msgType == EMPTY_TOKEN){//we can resend empty token or send new message if we have one
-        printf("%s: received empty token\n",myData.userName);
-        myData.ifHaveToken = true;
-        //serviceUDPSending();
-    }else{
-        //usuwam pakiet wtedy gdy juz wczesniej byl u mnie dokladnie taki sam
-        //i nie wyslalem tego pakietu sam do siebie
-        if(recvToken.msgID == myData.lastMessageId && recvToken.message.to != myData.userName){//we can send new empty token or new message if we have one
-            printf("%s: I need to delete this message: it has already been here\n",myData.userName);
-            //acquiring token
+    }else {
+        sleep(2);
+        myData.lastToken = recvToken;
+        if(recvToken.msgType == EMPTY_TOKEN){//we can resend empty token or send new message if we have one
             myData.ifHaveToken = true;
-            //updating last token received
-            myData.lastToken = recvToken;
-            myData.lastMessageId = recvToken.msgID;
-            //serviceUDPSending();
-        }else if(recvToken.message.to == myData.userName){//we can send new empty token or new message if we have one
-            //proccessing message
+            printf("%s: Received empty token\n",myData.userName);
+            ifNewMessageToSend ? serviceUDPSending() : serviceUDPResending();
+        }else if(strcmp(recvToken.message.to,myData.userName) == 0){//we can send new empty token or new message if we have one
+            myData.ifHaveToken = true;
             if(recvToken.msgType == STRING_MESSAGE){
                 printf("%s: I received: '%s' now i'm going to send\n",myData.userName,recvToken.message.content);
+            }else{
+                printf("%s:Message to me but it is unrecognized\n",myData.userName);
             }
-            //acquiring token
-            myData.ifHaveToken = true;
-            //updating last token received
-            myData.lastToken = recvToken;
-            myData.lastMessageId = recvToken.msgID;
-            //serviceUDPSending();
-        }else{//HERE we need to always resend
-            serviceUDPResending();
+            //jezeli odebralem swoj pakiet to teraz powinienem albo wyslac pusty token albo wyslac kolejny jesli mam jaki
+            serviceUDPSending();
+            //ifNewMessageToSend ? serviceUDPSending() : serviceUDPResending();
+        }else{
+            if(recvToken.msgID == myData.lastMessageId){
+                printf("%s: I need to delete this message: it has already been here\n",myData.userName);
+                ifNewMessageToSend ? serviceUDPSending() : serviceUDPResending();
+            }else{
+                serviceUDPResending();
+            }
         }
     }
-
-
 }

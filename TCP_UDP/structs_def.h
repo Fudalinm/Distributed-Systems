@@ -36,5 +36,17 @@ struct Token{
     Message message;
 };
 
+void printToken(Token token){
+    printf("##########################"
+           "\n#TOKEN"
+           "\n#type:%d"
+           "\n#tokenAuthorizationKey:%d"
+           "\n#msgID:%d"
+           "\n#TO:%s"
+           "\n#FROM:%s"
+           "\n#Content:%s\n"
+           "##########################\n",
+           token.msgType,token.tokenAutorizationKey,token.msgID,token.message.to,token.message.from,token.message.content);
+}
 
 #endif //TCP_UDP_STRUCTS_DEF_H
