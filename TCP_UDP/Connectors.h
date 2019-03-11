@@ -7,31 +7,33 @@
 
 #include "structs_def.h"
 
+
+
 // TODO: Refactor nextHop socket name
-class Connector{
-    public:
-        char userName[USER_NAME_SIZE];
-        int listeningPort; // ONLY IN TCP
-        int targetPort;
-        char* targetIP;
-        bool ifHaveToken;
-        bool ifAdmin;
-        int tokenAutorizationKey;
-        bool ifTCP;
-        int lastMessageId;
-
-        char nextHopUserName[USER_NAME_SIZE];
-        sockaddr_in nextHopAddress;
-        sockaddr_in listeningAddress;
-        SOCKET nextHopSocket;
-        SOCKET listeningSocket;
-
-        Token lastToken;
-        void printConnector();
+class Connector {
+public:
+    char userName[USER_NAME_SIZE];
+    int listeningPort; // ONLY IN TCP
+    int targetPort;
+    char *targetIP;
+    bool ifHaveToken;
+    bool ifAdmin;
+    int tokenAutorizationKey;
+    bool ifTCP;
+    int lastMessageId;
+    bool ifJoining;
+    //char nextHopUserName[USER_NAME_SIZE];
+    sockaddr_in nextHopAddress;
+    sockaddr_in listeningAddress;
+    SOCKET nextHopSocket;
+    SOCKET listeningSocket;
+    SOCKET tmpListeningSocket;
+    Token lastToken;
+    void printConnector();
 
 };
 
-void Connector::printConnector(){
+void Connector::printConnector() {
     printf("UserName: %s\n"
            "listeningPort: %d\n,"
            "targetPort:%d\n,"
@@ -40,10 +42,13 @@ void Connector::printConnector(){
            "ifAdmin:%d\n,"
            "tokenAutorizationKey:%d\n,"
            "ifTCP%d\n,"
-           "lastMessageID:%d\n"
-           ,userName,listeningPort,targetPort,targetIP
-           ,ifHaveToken,ifAdmin,tokenAutorizationKey,ifTCP,lastMessageId);
+           "lastMessageID:%d\n", userName, listeningPort, targetPort, targetIP, ifHaveToken, ifAdmin,
+           tokenAutorizationKey, ifTCP, lastMessageId);
 }
 
+Connector myData;
+bool ifNewMessageToSend = false;
+char userName[USER_NAME_SIZE];
+char message[MSG_SIZE];
 
 #endif //TCP_UDP_CONNECTORS_H

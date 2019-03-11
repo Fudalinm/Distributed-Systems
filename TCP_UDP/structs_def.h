@@ -8,35 +8,46 @@
 
 #define EMPTY_TOKEN 0
 #define STRING_MESSAGE 1
-#define REGISTER_MESSAGE 2
+#define REGISTER_REQUEST 2
+#define REGISTER_INFO 3
+#define REGISTER_RESPONSE 4
 
 
 #include "structs_utils.cpp"
 
-//void assignDataToMessage();
-//void assignDataToToken();
-
-
-struct RegisterRequest{
+struct RegisterRequest {
     char from[USER_NAME_SIZE];
-    int port;
-    char ip[16];
+    int newListeningPort;
+
 };
 
-struct Message{
+/** Response to new client about  */
+struct RegisterResponse {
+
+};
+
+/** Message needed to inform previous hop about changes*/
+struct RegisterInfo {
+    char from[USER_NAME_SIZE];
+    int oldSendingPort;
+    int newSendingPort;
+};
+
+
+struct Message {
     char from[USER_NAME_SIZE];
     char to[USER_NAME_SIZE];
     char content[MSG_SIZE];
 };
 
-struct Token{
+struct Token {
     int msgType;
     int msgID;
     int tokenAutorizationKey;
     Message message;
 };
 
-void printToken(Token token){
+void printToken(Token token) {
     printf("##########################"
            "\n#TOKEN"
            "\n#type:%d"
@@ -46,7 +57,8 @@ void printToken(Token token){
            "\n#FROM:%s"
            "\n#Content:%s\n"
            "##########################\n",
-           token.msgType,token.tokenAutorizationKey,token.msgID,token.message.to,token.message.from,token.message.content);
+           token.msgType, token.tokenAutorizationKey, token.msgID, token.message.to, token.message.from,
+           token.message.content);
 }
 
 #endif //TCP_UDP_STRUCTS_DEF_H
