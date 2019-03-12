@@ -202,7 +202,7 @@ void reactTCPToRegisterInfo(Message m, Token tokenToSend) {
         ///Have no idea why but sending new message solve problems
         ///probably token is lost during client add
         tokenToSend.msgType = STRING_MESSAGE;
-        memcpy(tokenToSend.message.content,"Udało mi sie z toba skomunikować\0",255);
+        memcpy(tokenToSend.message.content,"Could communicate with you\0",255);
         send(myData.nextHopSocket, (char *) &tokenToSend, sizeof(Token), 0) < 0 ? printf("%s: Couldn't send message in register Info\n")
                                                                                 : printf("%s: Could send message\n");
     }else {//przesyłamy dalej pakiet
@@ -214,7 +214,7 @@ void reactTCPToRegisterInfo(Message m, Token tokenToSend) {
 void serviceTCPReceiving() {
     sleep(1.5);
     Token recvToken;
-    recv(myData.listeningSocket, (char *) &recvToken, sizeof(recvToken), 0) < 0? printf("%s: Nie udalo sie odczytac\n",myData.userName):  printf("%s: Udalo sie odczytac\n",myData.userName);
+    recv(myData.listeningSocket, (char *) &recvToken, sizeof(recvToken), 0) < 0? printf("%s: Couldn't receive message\n",myData.userName):  printf("%s: Could receive message\n",myData.userName);
     sendMulticast();
     if (recvToken.msgType == REGISTER_REQUEST) {
         printf("%s: Received registration request: %s\n", myData.userName, recvToken.message.from);
