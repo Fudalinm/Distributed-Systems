@@ -9,8 +9,8 @@ file = 'log.txt'
 if len(sys.argv) > 1:
     file = sys.argv[1]
 
-MCAST_GRP = '224.1.1.1'
-MCAST_PORT = 5007
+MCAST_GRP = '127.0.0.2'
+MCAST_PORT = 2048
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
