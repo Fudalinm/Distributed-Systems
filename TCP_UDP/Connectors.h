@@ -8,8 +8,6 @@
 #include "structs_def.h"
 
 
-
-// TODO: Refactor nextHop socket name
 class Connector {
 public:
     char userName[USER_NAME_SIZE];
@@ -67,7 +65,7 @@ void sendMulticast() {
     addr.sin_addr.s_addr = inet_addr(MCAST_GRP);
     addr.sin_port = htons(MCAST_PORT);
 
-    if ((sendto(MCAST_SOCKET, myData.userName, sizeof(myData.userName), 0, (struct sockaddr *) &addr, sizeof(addr))) < 0) {
+    if ((sendto(MCAST_SOCKET, myData.userName, strlen(myData.userName), 0, (struct sockaddr *) &addr, sizeof(addr))) < 0) {
         perror("sendto");
         exit(1);
     }

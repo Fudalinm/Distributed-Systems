@@ -12,7 +12,7 @@
 #define REGISTER_INFO 3
 
 #define MCAST_GRP "127.0.0.2"
-#define MCAST_PORT 2048
+#define MCAST_PORT 1500
 
 
 #include "structs_utils.cpp"
