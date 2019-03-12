@@ -50,5 +50,27 @@ Connector myData;
 bool ifNewMessageToSend = false;
 char userName[USER_NAME_SIZE];
 char message[MSG_SIZE];
+SOCKET MCAST_SOCKET;
+
+
+
+void initMulticast() {
+    if ((MCAST_SOCKET = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+        printf("multi socket");
+        exit(1);
+    }
+}
+
+void sendMulticast() {
+    struct sockaddr_in addr;
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = inet_addr(MCAST_GRP);
+    addr.sin_port = htons(MCAST_PORT);
+
+    if ((sendto(MCAST_SOCKET, myData.userName, sizeof(myData.userName), 0, (struct sockaddr *) &addr, sizeof(addr))) < 0) {
+        perror("sendto");
+        exit(1);
+    }
+}
 
 #endif //TCP_UDP_CONNECTORS_H

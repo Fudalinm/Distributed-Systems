@@ -66,6 +66,7 @@ void sendRequest() {
 }
 
 void startUDP() {
+    initMulticast();
     createUDPSockets();
     if (myData.ifJoining) {
         sendRequest();
@@ -175,6 +176,7 @@ void serviceUDPReceiving() {
     sleep(1.5);
     Token recvToken;
     recv(myData.listeningSocket, (char *) &recvToken, sizeof(recvToken), 0);
+    sendMulticast();
     if (recvToken.msgType == REGISTER_REQUEST) {
         printf("%s: Received registration request: %s\n", myData.userName, recvToken.message.from);
         registerUDPClient(recvToken.message);

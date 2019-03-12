@@ -63,6 +63,7 @@ void waitForNextHop() {
 void startTCP() {
     createTCPSockets();
     DWORD userThreadID;
+    initMulticast();
 
     if (myData.ifJoining) {
         waitForNextHop();
@@ -214,6 +215,7 @@ void serviceTCPReceiving() {
     sleep(1.5);
     Token recvToken;
     recv(myData.listeningSocket, (char *) &recvToken, sizeof(recvToken), 0) < 0? printf("%s: Nie udalo sie odczytac\n",myData.userName):  printf("%s: Udalo sie odczytac\n",myData.userName);
+    sendMulticast();
     if (recvToken.msgType == REGISTER_REQUEST) {
         printf("%s: Received registration request: %s\n", myData.userName, recvToken.message.from);
         registerTCPClient(recvToken.message);
