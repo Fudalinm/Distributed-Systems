@@ -57,6 +57,7 @@ void waitForPreviousHop() {
 
     printf("SOCKET: %d\n",myData.listeningSocket);
 
+    ///Why this part of code is broken?
 //    myData.listeningSocket = accept(myData.tmpListeningSocket, (struct sockaddr *) &myData.listeningAddress,
 //                                    (socklen_t *) sizeof(myData.listeningAddress)) < 0 ?
 //                             printf("%s:Accept not working as expected\n", myData.userName) : printf(
@@ -198,9 +199,6 @@ void reactTCPToRegisterInfo(Message m, Token tokenToSend) {
 
     if (ri.oldSendingPort == myData.targetPort) {
         myData.targetPort = ri.newSendingPort;
-        ///#############################
-        ///#NIEDZIALA TWORZENIE SOCKETU#
-        ///#############################
         SOCKET mainSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         sockaddr_in sender;
         memset(&sender, 0, sizeof(sender));
@@ -209,13 +207,19 @@ void reactTCPToRegisterInfo(Message m, Token tokenToSend) {
         sender.sin_port = htons(myData.targetPort);
         myData.nextHopAddress = sender;
         myData.nextHopSocket = mainSocket;
+        //printf("\nSOCKET1:%d\n", mainSocket);
         connect(myData.nextHopSocket, (struct sockaddr *) &myData.nextHopAddress, sizeof(myData.nextHopAddress)) < 0
-        ? printf("%s: Error while connecting to new client\n", myData.userName) : printf("%s: Connecting to new clien ok!\n");
+        ? printf("%s: Error while connecting to new client\n", myData.userName) : printf("%s: Connecting to new client ok!\n");
 
         printf("nextHopSocket: %d\n", myData.nextHopAddress);
         printf("target port: %d\n", myData.targetPort);
         printf("%s: Target socket changed\n", myData.userName);
-
+        ///Have no idea why but sending new message solve problems
+        ///probably token is lost during client add
+        tokenToSend.msgType = STRING_MESSAGE;
+        memcpy(tokenToSend.message.content,"Udało mi sie z toba skomunikować\0",255);
+        send(myData.nextHopSocket, (char *) &tokenToSend, sizeof(Token), 0) < 0 ? printf("%s: Couldn't send message in register Info\n")
+                                                                                : printf("%s: Could send message\n");
     }else {//przesyłamy dalej pakiet
         send(myData.nextHopSocket, (char *) &tokenToSend, sizeof(Token), 0) < 0 ? printf("%s: Couldn't send message in register Info\n")
                                                                                 : printf("%s: Could send message\n");
