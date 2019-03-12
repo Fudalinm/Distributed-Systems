@@ -10,7 +10,6 @@
 #define STRING_MESSAGE 1
 #define REGISTER_REQUEST 2
 #define REGISTER_INFO 3
-#define REGISTER_RESPONSE 4
 
 
 #include "structs_utils.cpp"
@@ -21,10 +20,6 @@ struct RegisterRequest {
 
 };
 
-/** Response to new client about  */
-struct RegisterResponse {
-
-};
 
 /** Message needed to inform previous hop about changes*/
 struct RegisterInfo {

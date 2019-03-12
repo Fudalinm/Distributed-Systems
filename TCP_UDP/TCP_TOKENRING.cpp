@@ -15,22 +15,12 @@
 #include <iostream>
 
 void createTCPSockets();
-
 void serviceTCPSending();
-
 void serviceTCPResending();
-
 void serviceTCPReceiving();
-
-//TODO: check
 void sendTCPRequest();
-
-//TODO: Check
 void registerTCPClient(Message);
-
-//TODO: check
 void reactTCPToRegisterInfo(Message, Token);
-
 DWORD WINAPI newClientSignInThread(LPVOID lpParam);
 
 
@@ -152,9 +142,6 @@ void serviceTCPResending() {
     myData.lastMessageId = myData.lastToken.msgID;
 }
 
-
-
-//TODO: check
 void sendTCPRequest() {
     Token tokenToSend;
     RegisterRequest rq;
@@ -168,8 +155,6 @@ void sendTCPRequest() {
                                                                             : printf("%s: Could send join request\n");
 }
 
-
-//TODO: Check
 void registerTCPClient(Message m) {
     char newUserName[USER_NAME_SIZE];
     memcpy(newUserName, m.from, USER_NAME_SIZE);
@@ -192,7 +177,6 @@ void registerTCPClient(Message m) {
                                                                             : printf("%s: Could send message\n");
 }
 
-//TODO: Check
 void reactTCPToRegisterInfo(Message m, Token tokenToSend) {
     RegisterInfo ri;
     memcpy((void *) &ri, (void *) &m.content, sizeof(ri));
