@@ -20,7 +20,7 @@ void initializeSocket();
 DWORD WINAPI userLoop(LPVOID lpParam) {
     while (true) {
         sleep(4);
-        ifNewMessageToSend = false;
+//        ifNewMessageToSend = false;
         printf("Give user name to which you want to send a message:\n");
         std::cin >> userName;
         printf("Give message that you want to pass:\n");
