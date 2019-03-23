@@ -3,6 +3,7 @@
 //musi dzialac nawet jak czesc systemu ulegnie awarii
 
 
+import java.awt.*;
 import java.util.*;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
@@ -26,7 +27,7 @@ public class DistributedMap implements SimpleStringMap {
     private Hashtable<String,Integer> hashTable;
     private JChannel jChannel;
 
-//DONE
+
     public DistributedMap(int id,boolean isFirst){
         this.Id = new Integer(id);
         this.isFirstMap = isFirst;
@@ -95,31 +96,32 @@ public class DistributedMap implements SimpleStringMap {
         return x;
     }
 
-    private void start(){
-        try {
-
-            mainHashLoop();
-            jChannel.close();
-        }catch(Exception e){
-            System.out.println("Some error has occured");
-        }
-    }
-
-    private void mainHashLoop() throws Exception{
-        while(true){
-            MyMessage m = receiveMessage();
-            processMessage(m);
-            //jakis sleep zeby sie nie wykrzaczylo ;)
-        }
-    }
-
-    private MyMessage receiveMessage(){
-        return new MyMessage();
-
-    }
-
     private void processMessageFromJGroups(MyMessage message){
-
+        switch (message.messageType){
+            case INITIALIZATION_REQUEST:
+                System.out.println("JGroups: Handling init request");
+                if(this.isInitialized){
+                    System.out.println("Sending init_response");
+                    sendMessage(MessageType.INITIALIZATION_RESPONSE,-1,"NONE",this.hashTable);
+                }else{
+                    System.out.println("Cannot send init_response");
+                }
+                break;
+            case INITIALIZATION_RESPONSE:
+                System.out.println("JGroups: Handling init response");
+                if(this.isInitialized){
+                    System.out.println("I am initialized: ignore");
+                }else{
+                    System.out.println("Initialization complete");
+                    this.isInitialized = true;
+                    this.hashTable = message.h;
+                }
+                break;
+            case GET: System.out.println("JGroups: Handling get"); break; //TODO: No need to do anything?
+            case PUT: System.out.println("JGroups: Handling put"); this.hashTable.put(message.key,message.value); break;
+            case REMOVE: System.out.println("JGroups: Handling remove"); this.hashTable.remove(message.key); break;
+            case ERROR: System.out.println("JGroups: Error message has arrived"); break;
+        }
     }
 
     private int sendMessage(MessageType mt,Integer value,String key,Hashtable h){

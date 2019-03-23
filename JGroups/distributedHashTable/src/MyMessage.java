@@ -1,3 +1,6 @@
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.util.Hashtable;
 
 public class MyMessage {
@@ -23,7 +26,20 @@ public class MyMessage {
     }
 
     public MyMessage(byte[] buffer){
-        this.messageType = buffer.
+        this();
+        MyMessage m;
+        try{
+            ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(buffer));
+            m = (MyMessage) in.readObject();
+            in.close();
+            this.messageType = m.messageType;
+            this.h = m.h;
+            this.key = m.key;
+            this.senderID = m.senderID;
+            this.value = m.value;
 
+        }catch (Exception e){
+            System.out.println("Error while obtaining MyMessage");
+        }
     }
 }
