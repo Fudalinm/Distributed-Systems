@@ -161,8 +161,9 @@ public class DistributedMap implements SimpleStringMap {
                 }
             }
             public void receive (Message msg){
-                if(msg.getSrc().equals(jChannel.getAddress()))
+                if(msg.getSrc().equals(jChannel.getAddress())){
                     return;
+                }
                 JSONObject m = new JSONObject(new String(msg.getBuffer()));
                 System.out.println(m.toString());
                 processClusterMessages(m);
@@ -186,6 +187,10 @@ public class DistributedMap implements SimpleStringMap {
     /**Think it is done */
     private void processClusterMessages(JSONObject j){
         ServerTypeMessages mt = Enums.ServerTypeMessages.serverTypeMessagesFromString((String)j.get(JSONKeys.MESSAGE_TYPE.getMessageType()));
+//        System.out.println("#############################");
+//        System.out.println(mt);
+//        System.out.println((String)j.get(JSONKeys.MESSAGE_TYPE.getMessageType()));
+//        System.out.println("#############################");
         String key;
         switch (mt){
              case INITIALIZATION_RESPONSE:

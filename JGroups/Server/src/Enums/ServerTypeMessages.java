@@ -17,11 +17,11 @@ public enum ServerTypeMessages {
     public static ServerTypeMessages serverTypeMessagesFromString(String s){
         if(s.equals(INITIALIZATION_REQUEST.getServerMessageType())){
             return INITIALIZATION_REQUEST;
-        }else if(s.equals(INITIALIZATION_RESPONSE)){
+        }else if(s.equals(INITIALIZATION_RESPONSE.getServerMessageType())){
             return INITIALIZATION_RESPONSE;
-        }else if(s.equals(REMOVE_REQUEST)){
+        }else if(s.equals(REMOVE_REQUEST.getServerMessageType())){
             return REMOVE_REQUEST;
-        }else if(s.equals(PUT_REQUEST)){
+        }else if(s.equals(PUT_REQUEST.getServerMessageType())){
             return PUT_REQUEST;
         }else{
             return ERROR_MESSAGE;

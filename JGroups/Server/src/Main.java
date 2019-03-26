@@ -19,7 +19,7 @@ public class Main {
 
         Runnable r2;
         Thread t2;
-        r2 = new ClientCommunicator(2,1979,dm);
+        r2 = new ClientCommunicator(2,1979,dm2);
         t2 = new Thread(r2);
         t2.start();
 
