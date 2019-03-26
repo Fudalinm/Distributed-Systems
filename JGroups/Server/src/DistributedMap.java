@@ -1,9 +1,6 @@
 import Enums.JSONKeys;
 import Enums.ServerTypeMessages;
-import org.jgroups.JChannel;
-import org.jgroups.Message;
-import org.jgroups.ReceiverAdapter;
-import org.jgroups.View;
+import org.jgroups.*;
 import org.jgroups.protocols.*;
 import org.jgroups.protocols.pbcast.GMS;
 import org.jgroups.protocols.pbcast.NAKACK2;
@@ -11,6 +8,7 @@ import org.jgroups.protocols.pbcast.STABLE;
 import org.jgroups.stack.ProtocolStack;
 import java.net.InetAddress;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.json.*;
 
@@ -23,6 +21,38 @@ public class DistributedMap implements SimpleStringMap {
     private Map<String,Integer> hashMap = new HashMap<>();
     private JChannel jChannel;
     private boolean isInitialized = false;
+
+    /** Merge private class used only set receiver */
+    private class Merger extends Thread{
+        MergeView view;
+        JChannel myChannel;
+        public Merger(MergeView view, JChannel channel)
+        {
+            this.view= view;
+            this.myChannel=channel;
+        }
+        public void run()
+        {
+            List<View> subgroups=view.getSubgroups();
+            View primaryCluster=subgroups.get(0);
+            Address myAddr=myChannel.getAddress();
+            if(primaryCluster.containsMember(myAddr))
+            {
+                System.out.println("Merge occuring, in primary cluster nothis to do");
+            }
+            else
+            {
+                System.out.println("Merge occuring, in non-primary cluster, synchronizing");
+                try {
+                    myChannel.getState(null, 5000);
+                }
+                catch (Exception ex)
+                {
+                    throw new RuntimeException(ex.getMessage(),ex.getCause());
+                }
+            }
+        }
+    }
 
 
     //TODO: Tkink it is done but better mark :)
@@ -123,9 +153,12 @@ public class DistributedMap implements SimpleStringMap {
         jChannel.setReceiver(new ReceiverAdapter(){
             @Override
             public void viewAccepted(View view){
-
-                super.viewAccepted(view);
-                System.out.println(view.toString());
+                if(view instanceof MergeView){
+                    Merger merger=new Merger((MergeView) view,jChannel);
+                    merger.start();
+                }else{
+                    System.out.println(view.toString());
+                }
             }
             public void receive (Message msg){
                 if(msg.getSrc().equals(jChannel.getAddress()))
@@ -135,6 +168,7 @@ public class DistributedMap implements SimpleStringMap {
                 processClusterMessages(m);
             }
         });
+
         try{
             jChannel.connect(CHANNEL_NAME);
         }catch (Exception e){
