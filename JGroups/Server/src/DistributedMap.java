@@ -22,6 +22,7 @@ public class DistributedMap implements SimpleStringMap {
 
     private Map<String,Integer> hashMap = new HashMap<>();
     private JChannel jChannel;
+    private boolean isInitialized = false;
 
 
     //TODO: Tkink it is done but better mark :)
@@ -29,6 +30,8 @@ public class DistributedMap implements SimpleStringMap {
         initChannel();
         if(!isFirst){
             sendInitializationRequest();
+        }else{
+            isInitialized = true;
         }
         isFirst = false;
     }
@@ -120,7 +123,7 @@ public class DistributedMap implements SimpleStringMap {
         jChannel.setReceiver(new ReceiverAdapter(){
             @Override
             public void viewAccepted(View view){
-                //System.out.println("** view: " + view);
+
                 super.viewAccepted(view);
                 System.out.println(view.toString());
             }
@@ -133,7 +136,6 @@ public class DistributedMap implements SimpleStringMap {
             }
         });
         try{
-           // jChannel.connect(CHANNEL_NAME,null,10000);
             jChannel.connect(CHANNEL_NAME);
         }catch (Exception e){
             e.printStackTrace();
@@ -144,25 +146,32 @@ public class DistributedMap implements SimpleStringMap {
     /**Think it is done */
     private void initHashMapFromResponse(JSONObject j){
         this.hashMap = (HashMap) j.getJSONObject(JSONKeys.HASH_TABLE.getMessageType()).toMap();
+        System.out.println("Initializing from other map. Status: \n"+ this.showMap());
     }
 
     /**Think it is done */
     private void processClusterMessages(JSONObject j){
         ServerTypeMessages mt = Enums.ServerTypeMessages.serverTypeMessagesFromString((String)j.get(JSONKeys.MESSAGE_TYPE.getMessageType()));
-         switch (mt){
+        String key;
+        switch (mt){
              case INITIALIZATION_RESPONSE:
-                 initHashMapFromResponse(j);
+                 if(!isInitialized){
+                     initHashMapFromResponse(j);
+                 }
                  break;
              case INITIALIZATION_REQUEST:
                  sendInitializationResponse();
                  break;
              case REMOVE_REQUEST:
-                 this.hashMap.remove(j.get(JSONKeys.KEY.getMessageType()));
+                 key = (String) j.get(JSONKeys.KEY.getMessageType());
+                 this.hashMap.remove(key);
+                 System.out.println("REMOVE_REQUEST status after removing: \n"+this.showMap());
                  break;
              case PUT_REQUEST:
-                String key = (String) j.get(JSONKeys.KEY.getMessageType());
+                key = (String) j.get(JSONKeys.KEY.getMessageType());
                 Integer value = (Integer) j.get(JSONKeys.VALUE.getMessageType());
                 this.hashMap.put(key,value);
+                System.out.println("PUT_REQUEST status after putting: \n"+this.showMap());
                 break;
          }
     }
@@ -180,6 +189,7 @@ public class DistributedMap implements SimpleStringMap {
         ob.put(JSONKeys.MESSAGE_TYPE.getMessageType(), ServerTypeMessages.INITIALIZATION_RESPONSE);
         ob.put(JSONKeys.HASH_TABLE.getMessageType(),new JSONObject(this.hashMap));
         try{sendClusterMessage(ob);}catch (Exception e){System.out.println("Error while sending init response");}
+        System.out.println("Sending INITIALIZATION_RESPONSE status: " + this.showMap());
     }
 
     /**Think it is done */

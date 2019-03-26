@@ -3,7 +3,7 @@ import org.json.JSONObject;
 import java.util.HashMap;
 
 public class Main {
-    public static void main(String[] args){
+    public static void main(String[] args) throws Exception{
 
 
         DistributedMap dm = new DistributedMap();
@@ -14,6 +14,7 @@ public class Main {
         t = new Thread(r);
         t.start();
 
+        Thread.sleep(10000);
         DistributedMap dm2 = new DistributedMap();
 
         Runnable r2;
