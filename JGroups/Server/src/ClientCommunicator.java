@@ -61,13 +61,17 @@ public class ClientCommunicator implements Runnable{
             case REMOVE:
                 key = (String) j.get(JSONKeys.KEY.getMessageType());
                 val = this.distributedMap.remove(key);
-                response = "** ID: " + this.id + " ** " +"You removed element:\n     key: " + key + "     value: " + val;
+                response = "** ID: " + this.id + " ** " +"You removed element:\n     key: " + key + "     value: " + val+
+                        "\nCurrent map status is: " + this.distributedMap.showMap() +
+                        "for key " + key +"remove returned " + val;
                 System.out.println(response);
                 break;
             case GET:
                 key = (String) j.get(JSONKeys.KEY.getMessageType());
                 val = this.distributedMap.get(key);
-                response = "** ID: " + this.id + " ** " +"You wanted to get element:\n     key: " + key + "     value: " + val;
+                response = "** ID: " + this.id + " ** " +"You wanted to get element:\n     key: " + key + "     value: " + val +
+                            "\nCurrent map status is: " + this.distributedMap.showMap() +
+                            "for val " + val +"get returned " + val;
                 System.out.println(response);
                 break;
             case PUT:

@@ -16,7 +16,7 @@ public class DistributedMap implements SimpleStringMap {
 
     private static final String DEFAULT_MULTICAST_ADDRESS = "230.100.200.210";
     private static final String CHANNEL_NAME = "fudalinm_Cluster";
-    private static boolean isFirst = true;
+    //private static boolean isFirst = true;
 
     private Map<String,Integer> hashMap = new HashMap<>();
     private JChannel jChannel;
@@ -58,12 +58,13 @@ public class DistributedMap implements SimpleStringMap {
     //TODO: Tkink it is done but better mark :)
     public DistributedMap() {
         initChannel();
-        if(!isFirst){
+        //how to wait for response with timeout
+        View x = jChannel.getView();
+        if(x.getMembers().size() > 1){
             sendInitializationRequest();
         }else{
             isInitialized = true;
         }
-        isFirst = false;
     }
 
 /** S: Interface implementation */
@@ -187,30 +188,31 @@ public class DistributedMap implements SimpleStringMap {
     /**Think it is done */
     private void processClusterMessages(JSONObject j){
         ServerTypeMessages mt = Enums.ServerTypeMessages.serverTypeMessagesFromString((String)j.get(JSONKeys.MESSAGE_TYPE.getMessageType()));
-//        System.out.println("#############################");
-//        System.out.println(mt);
-//        System.out.println((String)j.get(JSONKeys.MESSAGE_TYPE.getMessageType()));
-//        System.out.println("#############################");
         String key;
         switch (mt){
              case INITIALIZATION_RESPONSE:
                  if(!isInitialized){
+                     isInitialized = true;
                      initHashMapFromResponse(j);
                  }
                  break;
              case INITIALIZATION_REQUEST:
-                 sendInitializationResponse();
+                 if(isInitialized) {sendInitializationResponse();}
                  break;
              case REMOVE_REQUEST:
-                 key = (String) j.get(JSONKeys.KEY.getMessageType());
-                 this.hashMap.remove(key);
-                 System.out.println("REMOVE_REQUEST status after removing: \n"+this.showMap());
+                 if(isInitialized) {
+                     key = (String) j.get(JSONKeys.KEY.getMessageType());
+                     this.hashMap.remove(key);
+                     System.out.println("REMOVE_REQUEST status after removing: \n" + this.showMap());
+                 }
                  break;
              case PUT_REQUEST:
-                key = (String) j.get(JSONKeys.KEY.getMessageType());
-                Integer value = (Integer) j.get(JSONKeys.VALUE.getMessageType());
-                this.hashMap.put(key,value);
-                System.out.println("PUT_REQUEST status after putting: \n"+this.showMap());
+                 if(isInitialized) {
+                     key = (String) j.get(JSONKeys.KEY.getMessageType());
+                     Integer value = (Integer) j.get(JSONKeys.VALUE.getMessageType());
+                     this.hashMap.put(key, value);
+                     System.out.println("PUT_REQUEST status after putting: \n" + this.showMap());
+                 }
                 break;
          }
     }
