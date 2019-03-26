@@ -16,7 +16,6 @@ public class DistributedMap implements SimpleStringMap {
 
     private static final String DEFAULT_MULTICAST_ADDRESS = "230.100.200.210";
     private static final String CHANNEL_NAME = "fudalinm_Cluster";
-    //private static boolean isFirst = true;
 
     private Map<String,Integer> hashMap = new HashMap<>();
     private JChannel jChannel;
@@ -54,11 +53,9 @@ public class DistributedMap implements SimpleStringMap {
         }
     }
 
-
-    //TODO: Tkink it is done but better mark :)
+    /**Think it is done */
     public DistributedMap() {
         initChannel();
-        //how to wait for response with timeout
         View x = jChannel.getView();
         if(x.getMembers().size() > 1){
             sendInitializationRequest();
