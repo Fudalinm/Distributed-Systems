@@ -96,14 +96,17 @@ public class DistributedMap implements SimpleStringMap {
 
     /**Think it is done */
     public Integer remove(String key){
-        int x = this.hashMap.remove(key);
-
-        /**Sending messages to others in cluster about removing from map*/
-        JSONObject j = new JSONObject();
-        j.put(JSONKeys.MESSAGE_TYPE.getMessageType(), ServerTypeMessages.REMOVE_REQUEST);
-        j.put(JSONKeys.KEY.getMessageType(),key);
-        sendClusterMessage(j);
-        return x;
+        if(this.hashMap.containsKey(key)){
+            /**Sending messages to others in cluster about removing from map*/
+            int x = this.hashMap.remove(key);
+            JSONObject j = new JSONObject();
+            j.put(JSONKeys.MESSAGE_TYPE.getMessageType(), ServerTypeMessages.REMOVE_REQUEST);
+            j.put(JSONKeys.KEY.getMessageType(),key);
+            sendClusterMessage(j);
+            return x;
+        }else{
+            return null;
+        }
     }
 /** E: Interface implementation */
     public String showMap(){
@@ -199,8 +202,11 @@ public class DistributedMap implements SimpleStringMap {
              case REMOVE_REQUEST:
                  if(isInitialized) {
                      key = (String) j.get(JSONKeys.KEY.getMessageType());
-                     this.hashMap.remove(key);
-                     System.out.println("REMOVE_REQUEST status after removing: \n" + this.showMap());
+                     if(this.hashMap.containsKey(key)){
+                         this.hashMap.remove(key);
+                         System.out.println("REMOVE_REQUEST status after removing: \n" + this.showMap());
+
+                     }
                  }
                  break;
              case PUT_REQUEST:

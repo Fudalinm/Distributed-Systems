@@ -41,6 +41,19 @@ public class Client {
         }
 
     }
+
+    private void receiveFromServer(){
+        byte[] buffer = new byte[2048];
+        DatagramPacket receivePacket = new DatagramPacket(buffer,buffer.length);
+        try{
+            this.serverSocket.receive(receivePacket);
+        }catch (Exception e){
+            e.printStackTrace();
+            System.out.println("Error while receiving message");
+        }
+        System.out.println(new String(buffer,0,receivePacket.getLength()));
+    }
+
     private JSONObject takeParameters(){
         System.out.println("Client " + this.name + " :" +  "Select operation type R-remove P-put V-View G-get");
         String type = new Scanner(System.in).nextLine();
@@ -89,6 +102,7 @@ public class Client {
             if(!this.msgToSend.toString().equals("{}")){
                 System.out.println("Client " + this.name + " : message to send\n" + this.msgToSend.toString());
                 sendToServer(this.msgToSend);
+                receiveFromServer();
             }
         }
 
