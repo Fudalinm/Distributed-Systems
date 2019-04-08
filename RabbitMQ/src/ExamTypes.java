@@ -3,7 +3,8 @@ public enum ExamTypes {
     KNEE("K"),
     ELBOW("E"),
     ERROR("ERROR"),
-    RESULT("RESULT")
+    RESULT("RESULT"),
+    ADMIN_MESSAGE("ADMIN_MESSAGE")
     ;
 
     private String value;

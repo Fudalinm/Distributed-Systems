@@ -5,13 +5,11 @@ import java.io.IOException;
 public class AdminCommunicator {
     private static String EXCHANGE_NAME = "EXCHANGE";
     private static String keyToAdmin = "TO_ADMIN";
-    private String keyFromAdmin;
+    private static String keyFromAdmin;
     private static Channel channelToAdmin;
-    //private static Channel channelFromAdmin;
 
-    /** N*/
-    public AdminCommunicator(String keyFromAdmin) throws Exception{
-        this.keyFromAdmin = keyFromAdmin + ".noAdmins";
+    public AdminCommunicator(String keyFromAdmin2) throws Exception{
+        keyFromAdmin = "#." + keyFromAdmin2 + ".#";
         System.out.println("Creating admin communicator");
         channelCreation();
 
@@ -29,7 +27,7 @@ public class AdminCommunicator {
             //Actually queuename is useless , i need it only to basic consume
         String queueName = channelToAdmin.queueDeclare().getQueue();
             //key is something like TECHNICIAN.noAdmins
-        channelToAdmin.queueBind(queueName,EXCHANGE_NAME,keyToAdmin);
+        channelToAdmin.queueBind(queueName,EXCHANGE_NAME,keyFromAdmin);
 
         Consumer consumer = new DefaultConsumer(channelToAdmin) {
             @Override

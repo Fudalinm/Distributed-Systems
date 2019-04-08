@@ -29,6 +29,12 @@ public class Message implements Serializable {
         this.doctorId = m.doctorId;
         this.examResults = m.examResults;
     }
+    public Message(String adminInfo){
+        this.patientName = "";
+        this.doctorId = "";
+        this.examResults = adminInfo;
+        this.examType = ExamTypes.ADMIN_MESSAGE;
+    }
     public byte[] serialize() throws Exception{
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream out = null;
