@@ -34,7 +34,7 @@ public class Admin {
         channel.queueBind(queueName,EXCHANGE_NAME,keyToAdmin);
         Consumer consumer = new DefaultConsumer(channel) {
             @Override
-            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) {
                 try{
                     Message m = new Message(body);
                     System.out.println("\u001B[33m"+
