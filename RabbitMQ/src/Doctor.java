@@ -3,6 +3,7 @@ import com.rabbitmq.client.*;
 import java.io.*;
 
 public class Doctor {
+    private static String groupName = "DOCTOR";
     private static String doctorName;
     private static Connection connection1;
     private static Connection connection2;
@@ -15,7 +16,7 @@ public class Doctor {
 
     public static void main(String[] argv) throws Exception{
         initDoc();
-        adminCommunicator = new AdminCommunicator();
+        adminCommunicator = new AdminCommunicator(groupName);
         handleDoc();
     }
     private static void initDoc() throws Exception{
@@ -93,6 +94,8 @@ public class Doctor {
             Message mToSend = new Message(patientName,examType,doctorName);
             /** Send bytes */
             examChannel.basicPublish("",examType.getValue(),null,mToSend.serialize());
+            /** Send to admin*/
+            adminCommunicator.sendToAdmin(mToSend.serialize());
         }
     }
 }

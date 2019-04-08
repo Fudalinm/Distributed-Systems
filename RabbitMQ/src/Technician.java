@@ -2,6 +2,7 @@ import com.rabbitmq.client.*;
 import java.io.*;
 
 public class Technician {
+    private static String groupName = "TECHNICIAN";
     private static ExamTypes type1;
     private static ExamTypes type2;
     private static Channel examChannel;
@@ -10,7 +11,7 @@ public class Technician {
 
     public static void main(String[] argv) throws  Exception{
         initTechnician();
-        adminCommunicator = new AdminCommunicator();
+        adminCommunicator = new AdminCommunicator(groupName);
         initChannels();
         initReceiveQueue();
     }
@@ -74,6 +75,8 @@ public class Technician {
                     resultChannel.queueDeclare(DOC_QUEUE, false, false, false, null);
                     /** Send bytes to queue with name docID */
                     resultChannel.basicPublish("",DOC_QUEUE,null,mToSend.serialize());
+                    /** Send to admin */
+                    adminCommunicator.sendToAdmin(mToSend.serialize());
                 }catch (Exception e){
                     e.printStackTrace();
                 }
