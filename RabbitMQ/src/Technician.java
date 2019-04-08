@@ -4,11 +4,13 @@ import java.io.*;
 public class Technician {
     private static ExamTypes type1;
     private static ExamTypes type2;
-    private static Channel examChanne;
-    private static Channel resultChanne;
+    private static Channel examChannel;
+    private static Channel resultChannel;
+    private static AdminCommunicator adminCommunicator;
 
     public static void main(String[] argv) throws  Exception{
         initTechnician();
+        adminCommunicator = new AdminCommunicator();
         initChannels();
         initReceiveQueue();
     }
@@ -36,27 +38,27 @@ public class Technician {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
         Connection connection = factory.newConnection();
-        examChanne = connection.createChannel();
+        examChannel = connection.createChannel();
         /** Change behaviour for receive */
-        examChanne.basicQos(1);
+        examChannel.basicQos(1);
 
         //channel for respond
         factory.setHost("localhost");
         Connection connection2 = factory.newConnection();
-        resultChanne = connection2.createChannel();
+        resultChannel = connection2.createChannel();
     }
     private static void initReceiveQueue()throws Exception{
         /** Init queue for each type that i can examine*/
         //1
         String queueName1 = type1.getValue();
-        examChanne.queueDeclare(queueName1, false, false, false, null);
+        examChannel.queueDeclare(queueName1, false, false, false, null);
         System.out.println("created queue: " + queueName1);
         //2
         String queueName2 = type2.getValue();
-        examChanne.queueDeclare(queueName2, false, false, false, null);
+        examChannel.queueDeclare(queueName2, false, false, false, null);
         System.out.println("created queue: " + queueName2);
         /** Consumer creation */
-        Consumer consumer = new DefaultConsumer(examChanne) {
+        Consumer consumer = new DefaultConsumer(examChannel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body){
                 try {
@@ -69,9 +71,9 @@ public class Technician {
                     /** sending response */
                     Message mToSend = new Message(m);
                     String DOC_QUEUE = mToSend.getDoctorId();
-                    resultChanne.queueDeclare(DOC_QUEUE, false, false, false, null);
+                    resultChannel.queueDeclare(DOC_QUEUE, false, false, false, null);
                     /** Send bytes to queue with name docID */
-                    resultChanne.basicPublish("",DOC_QUEUE,null,mToSend.serialize());
+                    resultChannel.basicPublish("",DOC_QUEUE,null,mToSend.serialize());
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -79,7 +81,7 @@ public class Technician {
         };
         /** Receive requests */
         System.out.println("Waiting for requests...");
-        examChanne.basicConsume(queueName1, true, consumer);
-        examChanne.basicConsume(queueName2, true, consumer);
+        examChannel.basicConsume(queueName1, true, consumer);
+        examChannel.basicConsume(queueName2, true, consumer);
     }
 }

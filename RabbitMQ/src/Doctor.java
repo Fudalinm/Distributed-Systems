@@ -11,9 +11,11 @@ public class Doctor {
     private static String QUEUE_ELBOW = ExamTypes.ELBOW.getValue();
     private static String QUEUE_KNEE = ExamTypes.KNEE.getValue();
     private static String QUEUE_HIP = ExamTypes.HIP.getValue();
+    private static AdminCommunicator adminCommunicator;
 
     public static void main(String[] argv) throws Exception{
         initDoc();
+        adminCommunicator = new AdminCommunicator();
         handleDoc();
     }
     private static void initDoc() throws Exception{
