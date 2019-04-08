@@ -71,38 +71,23 @@ public class Technician {
         Consumer consumer = new DefaultConsumer(examChannel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                ByteArrayInputStream bis = new ByteArrayInputStream(body);
-                ObjectInput in = null;
-                in = new ObjectInputStream(bis);
-                Message m;
                 try {
-                    m = (Message) in.readObject();
+                    Message m = new Message(body);
                     System.out.println("Received request:\n" +
                             "   doc: " + m.getDoctorId() +
                             "   patient: " + m.getPatientName() +
                             "   exam: " + m.getExamType().getValue());
-                    //System.out.println(m.getPatientName());
-
                     /** sending response */
                     //wynik to nazwa pacjenta + typ badania + „done”
                     Message mToSend = new Message(m);
 
                     /** TODO: maybe processing */
-
-                        /** Serializing */
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    ObjectOutputStream out = null;
-                    out = new ObjectOutputStream(bos);
-                    out.writeObject(mToSend);
-                    out.flush();
-                    byte[] bytesToSend = bos.toByteArray();
-
                     // queue for results
                     String DOC_QUEUE = mToSend.getDoctorId();
                     resultChannel.queueDeclare(DOC_QUEUE, false, false, false, null);
 
                     /** Send bytes to queue with name docID */
-                    examChannel.basicPublish("",DOC_QUEUE,null,bytesToSend);
+                    resultChannel.basicPublish("",DOC_QUEUE,null,mToSend.serialize());
                 }catch (Exception e){
                     e.printStackTrace();
                 }

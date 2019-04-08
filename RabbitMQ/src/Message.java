@@ -1,4 +1,4 @@
-import java.io.Serializable;
+import java.io.*;
 
 public class Message implements Serializable {
     private String patientName;
@@ -18,6 +18,25 @@ public class Message implements Serializable {
         this.examType = ExamTypes.RESULT;
         //wynik to nazwa pacjenta + typ badania + „done”
         this.examResults = m.patientName + " " + m.examType + " DONE\n";
+    }
+    public Message(byte[] body) throws Exception{
+        ByteArrayInputStream bis = new ByteArrayInputStream(body);
+        ObjectInput in = null;
+        in = new ObjectInputStream(bis);
+        Message m = (Message) in.readObject();
+
+        this.patientName = m.patientName;
+        this.examType = m.examType;
+        this.doctorId = m.doctorId;
+        this.examResults = m.examResults;
+    }
+    public byte[] serialize() throws Exception{
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream out = null;
+        out = new ObjectOutputStream(bos);
+        out.writeObject(this);
+        out.flush();
+        return bos.toByteArray();
     }
     public String getPatientName(){
         return this.patientName;

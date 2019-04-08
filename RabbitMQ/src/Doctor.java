@@ -10,7 +10,6 @@ public class Doctor {
     private static String QUEUE_ELBOW = ExamTypes.ELBOW.getValue();
     private static String QUEUE_KNEE = ExamTypes.KNEE.getValue();
     private static String QUEUE_HIP = ExamTypes.HIP.getValue();
-    /*Producer Like */
     public static void main(String[] argv) throws Exception{
         System.out.println("Hello I'm doctor give me MY name");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -40,12 +39,8 @@ public class Doctor {
         Consumer consumer = new DefaultConsumer(resultChannel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                ByteArrayInputStream bis = new ByteArrayInputStream(body);
-                ObjectInput in = null;
-                in = new ObjectInputStream(bis);
-                Message m;
                 try {
-                    m = (Message) in.readObject();
+                    Message m = new Message(body);
                     System.out.println("Got new results : \n" + m.getExamResults());
                 }catch (Exception e){
                     e.printStackTrace();
@@ -69,7 +64,7 @@ public class Doctor {
             if(typeOfExam.length() == 1){
                 examType = ExamTypes.fromCharacter(typeOfExam.charAt(0));
                 if(examType == ExamTypes.ERROR){
-                    System.out.println("Bad type given try again try again");
+                    System.out.println("Bad type given try again");
                     continue;
                 }
             }else{
@@ -78,6 +73,8 @@ public class Doctor {
                     /** Close */
                     examChannel.close();
                     connection.close();
+                    resultChannel.close();
+                    connection2.close();
                     return;
                 }
                 System.out.println("Bad type given try again try again");
@@ -85,18 +82,10 @@ public class Doctor {
             }
 
             /** Creating message */
-            Message m = new Message(patientName,examType,doctorName);
-
-            /** Serializing */
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream out = null;
-            out = new ObjectOutputStream(bos);
-            out.writeObject(m);
-            out.flush();
-            byte[] bytesToSend = bos.toByteArray();
+            Message mToSend = new Message(patientName,examType,doctorName);
 
             /** Send bytes */
-            examChannel.basicPublish("",examType.getValue(),null,bytesToSend);
+            examChannel.basicPublish("",examType.getValue(),null,mToSend.serialize());
 
         }
 
