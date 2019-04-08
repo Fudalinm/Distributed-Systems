@@ -4,51 +4,59 @@ import java.io.*;
 
 public class Doctor {
     private static String doctorName;
+    private static Connection connection1;
+    private static Connection connection2;
     private static Channel examChannel;
     private static Channel resultChannel;
-    //private static String EXCHANGE_NAME = "exchange10";
     private static String QUEUE_ELBOW = ExamTypes.ELBOW.getValue();
     private static String QUEUE_KNEE = ExamTypes.KNEE.getValue();
     private static String QUEUE_HIP = ExamTypes.HIP.getValue();
+
     public static void main(String[] argv) throws Exception{
+        initDoc();
+        handleDoc();
+    }
+    private static void initDoc() throws Exception{
         System.out.println("Hello I'm doctor give me MY name");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         doctorName = br.readLine();
 
-        /** I need to prepare to receive response from technician*/
-
         /** Queue initialization for exam*/
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
-        Connection connection = factory.newConnection();
-        examChannel = connection.createChannel();
+        connection1 = factory.newConnection();
+        examChannel = connection1.createChannel();
 
         examChannel.queueDeclare(QUEUE_ELBOW,false,false,false,null);
         examChannel.queueDeclare(QUEUE_KNEE,false,false,false,null);
         examChannel.queueDeclare(QUEUE_HIP,false,false,false,null);
 
-        /** exchange */
-        /** exchange only for admin purpose */
-
         /** Result queue init*/
-        Connection connection2 = factory.newConnection();
+        connection2 = factory.newConnection();
         resultChannel = connection2.createChannel();
         String RESULT_QUEUE = doctorName;
         resultChannel.queueDeclare(RESULT_QUEUE,false,false,false,null);
 
         Consumer consumer = new DefaultConsumer(resultChannel) {
             @Override
-            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) {
                 try {
                     Message m = new Message(body);
-                    System.out.println("Got new results : \n" + m.getExamResults());
+                    System.out.println(
+                            "\u001B[34m" +
+                            "#############################################################\n"+
+                            "Got new results : \n" + m.getExamResults()+
+                            "#############################################################" +
+                            "\u001B[0m");
                 }catch (Exception e){
                     e.printStackTrace();
                 }
             }
         };
         resultChannel.basicConsume(RESULT_QUEUE, true, consumer);
-
+    }
+    private static void handleDoc() throws Exception{
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         while(true){
             /** Collecting data to be sent */
             System.out.println("Give me your name");
@@ -59,37 +67,30 @@ public class Doctor {
                     "       K - Knee\n" +
                     "       E - elbow\n" +
                     "       EXIT to exit");
-            String typeOfExam = br.readLine();
+            String typeOfExamGiven = br.readLine();
             ExamTypes examType;
-            if(typeOfExam.length() == 1){
-                examType = ExamTypes.fromCharacter(typeOfExam.charAt(0));
+            if(typeOfExamGiven.length() == 1){
+                examType = ExamTypes.fromCharacter(typeOfExamGiven.charAt(0));
                 if(examType == ExamTypes.ERROR){
                     System.out.println("Bad type given try again");
                     continue;
                 }
             }else{
-                if(typeOfExam.equals("EXIT")){
+                if(typeOfExamGiven.equals("EXIT")){
                     System.out.println("Thank you goodbye");
-                    /** Close */
                     examChannel.close();
-                    connection.close();
+                    connection1.close();
                     resultChannel.close();
                     connection2.close();
-                    return;
+                    System.exit(0);
                 }
                 System.out.println("Bad type given try again try again");
                 continue;
             }
-
             /** Creating message */
             Message mToSend = new Message(patientName,examType,doctorName);
-
             /** Send bytes */
             examChannel.basicPublish("",examType.getValue(),null,mToSend.serialize());
-
         }
-
-
-
     }
 }

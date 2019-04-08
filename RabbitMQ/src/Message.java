@@ -16,7 +16,6 @@ public class Message implements Serializable {
         this.doctorId = m.doctorId;
         this.patientName = m.patientName;
         this.examType = ExamTypes.RESULT;
-        //wynik to nazwa pacjenta + typ badania + „done”
         this.examResults = m.patientName + " " + m.examType + " DONE\n";
     }
     public Message(byte[] body) throws Exception{
@@ -41,7 +40,6 @@ public class Message implements Serializable {
     public String getPatientName(){
         return this.patientName;
     }
-
     public String getExamResults(){
         return this.examResults;
     }
