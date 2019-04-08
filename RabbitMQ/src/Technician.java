@@ -7,8 +7,15 @@ public class Technician {
     private static ExamTypes type2;
     private static String EXCHANGE_NAME = "exchange10";
     private static Channel examChannel;
+    private static Channel resultChannel;
     /** Consumer like */
     public static void main(String[] argv) throws  Exception{
+        initTechnician();
+        initReceiveQueue();
+        /** Respond request*/
+    }
+
+    private static void initTechnician()throws Exception{
         /** Initialization */
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         System.out.println("Give ONLY two out of three types which technician can examine\n" +
@@ -17,8 +24,6 @@ public class Technician {
                 "   E - Elbow");
         String types = br.readLine();
         if(types.length() == 2) {
-            System.out.println(types.charAt(0));
-            System.out.println(types.charAt(1));
             type1 = ExamTypes.fromCharacter(types.charAt(0));
             type2 = ExamTypes.fromCharacter(types.charAt(1));
         }else{
@@ -30,7 +35,7 @@ public class Technician {
             return;
         }
         /** End of init */
-        // connection & channel
+        // chanel for requests
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
         Connection connection = factory.newConnection();
@@ -38,16 +43,23 @@ public class Technician {
         /** Change swap behaviour */
         examChannel.basicQos(1);
 
-        //examChannel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
+        //channel for respond
 
+        factory.setHost("localhost");
+        Connection connection2 = factory.newConnection();
+        resultChannel = connection2.createChannel();
+
+        //examChannel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
+    }
+    private static void initReceiveQueue()throws Exception{
         /** Init queue for each type that i can examine*/
-            //1
+        //1
         String queueName1 = type1.getValue();
         //String queueName = examChannel.queueDeclare().getQueue();
         //examChannel.queueBind(queueName1, EXCHANGE_NAME, type1.getValue());
         examChannel.queueDeclare(queueName1, false, false, false, null);
         System.out.println("created queue: " + queueName1);
-            //2
+        //2
         String queueName2 = type2.getValue();
         //String queueName2 = examChannel.queueDeclare().getQueue();
         //examChannel.queueBind(queueName2, EXCHANGE_NAME, type2.getValue());
@@ -65,29 +77,40 @@ public class Technician {
                 Message m;
                 try {
                     m = (Message) in.readObject();
-                    System.out.println(m.getPatientName());
+                    System.out.println("Received request:\n" +
+                            "   doc: " + m.getDoctorId() +
+                            "   patient: " + m.getPatientName() +
+                            "   exam: " + m.getExamType().getValue());
+                    //System.out.println(m.getPatientName());
+
+                    /** sending response */
+                    //wynik to nazwa pacjenta + typ badania + „done”
+                    Message mToSend = new Message(m);
+
+                    /** TODO: maybe processing */
+
+                        /** Serializing */
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    ObjectOutputStream out = null;
+                    out = new ObjectOutputStream(bos);
+                    out.writeObject(mToSend);
+                    out.flush();
+                    byte[] bytesToSend = bos.toByteArray();
+
+                    // queue for results
+                    String DOC_QUEUE = mToSend.getDoctorId();
+                    resultChannel.queueDeclare(DOC_QUEUE, false, false, false, null);
+
+                    /** Send bytes to queue with name docID */
+                    examChannel.basicPublish("",DOC_QUEUE,null,bytesToSend);
                 }catch (Exception e){
                     e.printStackTrace();
                 }
             }
         };
-
         /** Receive requests */
-        System.out.println("Waiting for messages...");
+        System.out.println("Waiting for requests...");
         examChannel.basicConsume(queueName1, true, consumer);
         examChannel.basicConsume(queueName2, true, consumer);
-
-        /** Respond request*/
-
-
-
-
-
-
-
-
-
-
-
     }
 }

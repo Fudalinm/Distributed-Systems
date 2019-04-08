@@ -2,7 +2,8 @@ public enum ExamTypes {
     HIP("H"),
     KNEE("K"),
     ELBOW("E"),
-    ERROR("ERROR")
+    ERROR("ERROR"),
+    RESULT("RESULT")
     ;
 
     private String value;

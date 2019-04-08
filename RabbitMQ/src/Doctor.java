@@ -1,20 +1,18 @@
-import com.rabbitmq.client.BuiltinExchangeType;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.*;
 
 import java.io.*;
 
 public class Doctor {
     private static String doctorName;
     private static Channel examChannel;
-    private static String EXCHANGE_NAME = "exchange10";
+    private static Channel resultChannel;
+    //private static String EXCHANGE_NAME = "exchange10";
     private static String QUEUE_ELBOW = ExamTypes.ELBOW.getValue();
     private static String QUEUE_KNEE = ExamTypes.KNEE.getValue();
     private static String QUEUE_HIP = ExamTypes.HIP.getValue();
     /*Producer Like */
     public static void main(String[] argv) throws Exception{
-        System.out.println("Hello I'm doctor give me MY name\n");
+        System.out.println("Hello I'm doctor give me MY name");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         doctorName = br.readLine();
 
@@ -32,7 +30,29 @@ public class Doctor {
 
         /** exchange */
         /** exchange only for admin purpose */
-        //examChannel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
+
+        /** Result queue init*/
+        Connection connection2 = factory.newConnection();
+        resultChannel = connection2.createChannel();
+        String RESULT_QUEUE = doctorName;
+        resultChannel.queueDeclare(RESULT_QUEUE,false,false,false,null);
+
+        Consumer consumer = new DefaultConsumer(resultChannel) {
+            @Override
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                ByteArrayInputStream bis = new ByteArrayInputStream(body);
+                ObjectInput in = null;
+                in = new ObjectInputStream(bis);
+                Message m;
+                try {
+                    m = (Message) in.readObject();
+                    System.out.println("Got new results : \n" + m.getExamResults());
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        };
+        resultChannel.basicConsume(RESULT_QUEUE, true, consumer);
 
         while(true){
             /** Collecting data to be sent */
@@ -43,29 +63,29 @@ public class Doctor {
                     "       H - hip\n" +
                     "       K - Knee\n" +
                     "       E - elbow\n" +
-                    "       EXIT to exit\n");
+                    "       EXIT to exit");
             String typeOfExam = br.readLine();
             ExamTypes examType;
             if(typeOfExam.length() == 1){
                 examType = ExamTypes.fromCharacter(typeOfExam.charAt(0));
                 if(examType == ExamTypes.ERROR){
-                    System.out.println("Bad type given try again try again\n");
+                    System.out.println("Bad type given try again try again");
                     continue;
                 }
             }else{
                 if(typeOfExam.equals("EXIT")){
-                    System.out.println("Thank you goodbye \n");
+                    System.out.println("Thank you goodbye");
                     /** Close */
                     examChannel.close();
                     connection.close();
                     return;
                 }
-                System.out.println("Bad type given try again try again\n");
+                System.out.println("Bad type given try again try again");
                 continue;
             }
 
             /** Creating message */
-            Message m = new Message(patientName,examType);
+            Message m = new Message(patientName,examType,doctorName);
 
             /** Serializing */
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
