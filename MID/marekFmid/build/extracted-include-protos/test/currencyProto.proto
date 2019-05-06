@@ -1,0 +1,28 @@
+syntax  = "proto3";
+option java_package =  "generated.proto";
+option java_outer_classname = "CurrencyMid";
+
+enum CURRENCY{
+	USD =0;
+	EUR =1;
+	PLN =2;
+	RUB =3;
+	KR  =4;
+}
+
+service CurrencyExchange{
+	rpc getCurrencies(CurrencyRequest) returns(stream CurrencyResponse);
+}
+
+message CurrencyRequest {
+	repeated CURRENCY currList = 1;
+}
+
+message CurrencyResponse {
+	message CurrencyRatio {
+		CURRENCY first = 1;
+		CURRENCY second = 2;
+		uint64 ratio_F_S = 3;
+	}
+	repeated CurrencyRatio currRatioList = 1;
+}

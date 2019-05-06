@@ -12,8 +12,6 @@ public class AdminCommunicator {
         keyFromAdmin = "#." + keyFromAdmin2 + ".#";
         System.out.println("Creating admin communicator");
         channelCreation();
-
-/*mamy wysylac i odbierac na roznych kanałach */
     }
 
     private static void channelCreation()throws Exception{
@@ -45,7 +43,6 @@ public class AdminCommunicator {
         };
         channelToAdmin.basicConsume(queueName,true,consumer);
     }
-
     public void sendToAdmin(byte[] toSend) throws Exception{
         channelToAdmin.basicPublish(EXCHANGE_NAME, keyToAdmin, null, toSend);
     }
