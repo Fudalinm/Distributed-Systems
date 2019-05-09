@@ -138,6 +138,5 @@ class BankServer():
 
 if __name__ == "__main__":
     with Ice.initialize(sys.argv) as communicator:
-        #bs = BankServer("Bank1", [EUR, USD, PLN], "SimplePrinterAdapter","10000")
-
-        bs = BankServer("Bank2", [EUR, USD, KR], "SimplePrinterAdapter2","10001")
+        bs = BankServer("Bank1", [EUR, USD, PLN], "SimplePrinterAdapter","10000")
+        #bs = BankServer("Bank2", [EUR, USD, KR], "SimplePrinterAdapter2","10001")
