@@ -19,11 +19,6 @@ public class CurrencyExchangeService extends CurrencyExchangeGrpc.CurrencyExchan
         }
         public void run(){
             while(true){
-//                try{
-//                    condition.await();
-//                }catch (Exception e){
-//                    e.printStackTrace();
-//                }
                 CurrencyExchange.waitForChange();
                 /**jak oczekiwac na nowego pinga */
                 CurrencyMid.CurrencyResponse.Builder currencyResponseBuilder= CurrencyMid.CurrencyResponse.newBuilder();

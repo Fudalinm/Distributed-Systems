@@ -56,18 +56,11 @@ class AccountPremiumI(AccountStandardI, Bankk.AccountPremium):
         m2 = None
         # print(exchange.currencyRatings)
         for (cc1, cc2, ratio) in exchange.currencyRatings:
-            # print("xDDD")
-            # print(cc1)
-            # print(cc2)
-            # print(national)
-            # print(c.currency.value)
-            # print("xDDD")
-
             if cc1 == national and cc2 == c.currency.value:
-                print("Found 1")
+                # print("Found 1")
                 m1 = Bankk.Money(Bankk.CURRENCY.valueOf(cc1), (c.amount * ((100 + Time) / 100) * ratio)/1000)
             if cc1 == c.currency.value and cc2 == national:
-                print("Found 2")
+                # print("Found 2")
                 m2 = Bankk.Money(Bankk.CURRENCY.valueOf(cc1), (c.amount * ((100 + Time) / 100) * ratio)/1000)
         if national == c.currency.value:
             m1 = Bankk.Money(Bankk.CURRENCY.valueOf(cc1), c.amount * ((100 + Time) / 100))
@@ -139,4 +132,4 @@ class BankServer():
 if __name__ == "__main__":
     with Ice.initialize(sys.argv) as communicator:
         bs = BankServer("Bank1", [EUR, USD, PLN], "SimplePrinterAdapter","10000")
-        #bs = BankServer("Bank2", [EUR, USD, KR], "SimplePrinterAdapter2","10001")
+        # bs = BankServer("Bank2", [EUR, USD, KR], "SimplePrinterAdapter2","10001")

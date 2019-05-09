@@ -39,4 +39,4 @@ if __name__ == "__main__":
     e = Exchange([EUR, USD, PLN], "5005")
 
     print("hello wordl xd")
-    time.sleep(10 * 1000)
+    time.sleep(100 * 1000)

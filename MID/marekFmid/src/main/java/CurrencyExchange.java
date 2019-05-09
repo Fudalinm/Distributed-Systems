@@ -63,7 +63,6 @@ public class CurrencyExchange extends Thread{
         }catch (Exception e){
             System.out.println("Error while waiting for ping");
         }
-
         lock.unlock();
     }
 
