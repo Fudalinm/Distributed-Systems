@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cc403c6f-5f0b-4e81-9cae-b34e98f0438d" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../bank/bank.py" beforeDir="false" afterPath="$PROJECT_DIR$/../bank/bank.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../bank/currency_Exchange.py" beforeDir="false" afterPath="$PROJECT_DIR$/../bank/currency_Exchange.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/CurrencyExchange.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/CurrencyExchange.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/CurrencyExchangeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/CurrencyExchangeService.java" afterDir="false" />
-    </list>
+    <list default="true" id="cc403c6f-5f0b-4e81-9cae-b34e98f0438d" name="Default Changelist" comment="" />
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/.gradle/" />
     <ignored path="$PROJECT_DIR$/build/" />
@@ -26,7 +20,7 @@
     <session id="-1629536405">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="7" />
+          <entry key="project.closed" value="8" />
           <entry key="project.open.time.0" value="2" />
           <entry key="project.open.time.12" value="1" />
           <entry key="project.open.time.13" value="2" />
@@ -515,7 +509,7 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
-  <component name="ProjectFrameBounds" extendedState="1">
+  <component name="ProjectFrameBounds">
     <option name="x" value="953" />
     <option name="width" value="974" />
     <option name="height" value="1047" />
@@ -666,12 +660,12 @@
       <workItem from="1557331966375" duration="191000" />
       <workItem from="1557334464772" duration="25000" />
       <workItem from="1557390373538" duration="2017000" />
-      <workItem from="1557395492678" duration="315000" />
+      <workItem from="1557395492678" duration="405000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="26807000" />
+    <option name="totallyTimeSpent" value="26897000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -683,7 +677,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="953" y="0" width="974" height="1047" extended-state="1" />
+    <frame x="953" y="0" width="974" height="1047" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.44857767" />
