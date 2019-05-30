@@ -22,6 +22,7 @@ public class OrderService extends AbstractActor {
                 .match(MessageToService.class, m -> {
                     log.info("received order request writing to file\n");
                     fileWriter.write(m.actorRef.toString() + " " + m.bookTitle);
+                    fileWriter.close();
                     m.actorRef.tell("Wrote order to file : '" + m.actorRef.toString() + " " + m.bookTitle +" '",null);
                 })
                 .matchAny(o -> log.info("OrderService: received unknown message"))
