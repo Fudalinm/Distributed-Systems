@@ -3,46 +3,38 @@ import org.apache.zookeeper.data.Stat;
 import java.util.List;
 import java.util.Scanner;
 
-
 public class Executor implements Watcher , Runnable, AsyncCallback.StatCallback {
-
     /**We are only interested in node '/z' */
     String znode = "/z";
     ZooKeeper zooKeeper;
     /** Arguments of programm*/
     String hostPort;
-    String pathToExec;
-    String[] argsToExec;
-    Process program;
+    String[] pathToExec;
+    Process program = null;
     Children2Callback children2Callback;
     public boolean fShowChildTree = false;
 
-
-    public Executor(String hostPort,String pathToExec,String[] args) throws Exception{
+    public Executor(String hostPort,String[] pathToExec) throws Exception{
         this.hostPort = hostPort;
         this.pathToExec = pathToExec;
-        this.argsToExec = args;
         this.zooKeeper = new ZooKeeper(hostPort, 3000, this);
         //needed to follow children
         this.children2Callback = new Children2Callback() {
             @Override
             public void processResult(int rc, String path, Object ctx, List<String> children, Stat stat) {
+                if(children == null){return;}
                 if(fShowChildTree){
-                    if (children == null){System.out.println("Node have no child"); return;}
                     System.out.format("Children(%d) of our node:\n",children.size());
                     for (String x : children){
                         System.out.format("     - %s\n",x);
                     }
                     fShowChildTree = false;
-                    return;
                 }else {
                     System.out.format("Current number of children = %d\n",children.size());
                 }
-
             }
         };
     }
-
 
     /** Callback to handle information from zookeeper server we are connected to*/
     public void process(WatchedEvent event) {
@@ -89,22 +81,30 @@ public class Executor implements Watcher , Runnable, AsyncCallback.StatCallback 
             case SESSIONEXPIRED:
             case NOAUTH:
                 System.out.println("The node is dead!");
-                //this.killProgram();
+                this.quit();
                 return;
              default:
                  System.out.println("Unknown error, retrying to check existance");
                  this.zooKeeper.exists(this.znode,true,this,null);
-                 return;
         }
     }
 
     void stopProgram(){
         /**Need to check if it started */
         System.out.println("Handling no node\n");
+        if(this.program ==null) return;
+        this.program.destroy();
+        this.program = null;
     }
     void startProgram(){
         /**Need to run program :) */
         System.out.println("Handling is node\n");
+        if(this.program != null) return;
+        try{
+            this.program = Runtime.getRuntime().exec(this.pathToExec);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     void quit() {
@@ -126,17 +126,22 @@ public class Executor implements Watcher , Runnable, AsyncCallback.StatCallback 
     }
 
     public static void main (String[] args) throws Exception{
-        String[] arguments = new String[args.length-2];
-        System.arraycopy(args,2,arguments,0,arguments.length);
-        Executor e = new Executor(args[0],args[1],arguments);
+        String[] pathToExec = new String[args.length-1];
+        System.arraycopy(args,1,pathToExec,0,pathToExec.length);
+        Executor e = new Executor(args[0],pathToExec);
         e.run();
         while (true){
-            System.out.println("Type Y to see child tree\n");
+            System.out.println("Type Y to see child tree | Q to quit\n");
             Scanner scanner = new Scanner(System.in);
             String line = scanner.nextLine();
             if(line.equals("Y")){
                 e.fShowChildTree = true;
                 e.zooKeeper.getChildren(e.znode,true,e.children2Callback,e.children2Callback);
+            }else if(line.equals("Q")) {
+                e.quit();
+                System.exit(1);
+            }else {
+                System.out.format("Unrecognized message");
             }
         }
     }
